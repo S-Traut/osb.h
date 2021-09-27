@@ -2,18 +2,24 @@ SRC := src
 OBJ := obj
 FLAGS=-g -Wall
 
+NAME=osbh
+
 SOURCES := $(wildcard $(SRC)/*.c)
 OBJECTS := $(patsubst $(SRC)/%.c, $(OBJ)/%.o, $(SOURCES))
 
-exec: osbh
-	./osbh
+exec: $(NAME)
+	@./$(NAME)
 
-osbx: $(OBJECTS)
-	$(CC) $^ -o $@ $(FLAGS)
+$(NAME): $(OBJ) $(OBJECTS)
+	@$(CC) $(OBJECTS) -o $(NAME) $(FLAGS)
 
 $(OBJ)/%.o: $(SRC)/%.c
-	$(CC) -I$(SRC) -c $< -o $@ $(FLAGS)
+	@$(CC) -I$(SRC) -c $< -o $@ $(FLAGS)
+
+$(OBJ):
+	@mkdir $(OBJ)
 
 clean:
-	rm -rf obj/
-	rm libft
+	@rm -rf $(OBJ)
+	@rm -f libft
+	@rm -f $(NAME)
