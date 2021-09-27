@@ -2,8 +2,8 @@
 #include "stdlib.h"
 #include "string.h"
 
-#ifndef XLIST
-#define XLIST
+#ifndef osbList
+#define osbList
 
 #define LSMODE_DYNAMIC -1
 
