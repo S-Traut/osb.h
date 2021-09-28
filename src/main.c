@@ -2,13 +2,15 @@
 
 int main(int argc, char const *argv[])
 {
-	Storyboard *storyboard;
+	Storyboard *storyboard = sbcreate();
+	short pixel = getpath(storyboard, "sb/p.png");
 
-	StoryboardElement sprite;
-	sfevent(E_FADE, &sprite, 0, 1);
-	sbpush(storyboard, sprite);
+	Sprite sprite = sprc(pixel);
+	sfevent(E_FADE, &sprite, 0, 1.5f);
+	sbpush(storyboard, &sprite);
 
-	sbprint(storyboard);
+	sprprint(storyboard, &sprite);
+
 	sbfree(storyboard);
 	return 0;
 }
