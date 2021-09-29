@@ -38,6 +38,9 @@ typedef unsigned char Byte;
 	(VEC2) { 320, 240 }
 
 #define v2equal(v1, v2) (v1.x == v2.x) && (v1.y == v2.y)
+#define etype(v) (v->header >> 12)
+#define ptype(v) (v->header & 3840) >> 8
+#define isdynamic(event) (event->type & 128) >> 7)
 
 // Type definitions
 
@@ -54,27 +57,19 @@ typedef struct StoryboardElement
 	unsigned short header;
 	unsigned short path_index;
 	unsigned int pos_index;
-	List *sparameters;
-	List *dparameters;
+	List *events;
 } StoryboardElement;
 
 typedef StoryboardElement Sprite;
 
-typedef struct StaticEvent
+typedef struct Event
 {
-	Byte type;
-	int time;
-	float value;
-} StaticEvent;
-
-typedef struct DynamicEvent
-{
-	Byte type;
+	short header;
 	int stime;
 	int etime;
-	float svalue;
-	float evalue;
-} DynamicEvent;
+	void *svalue;
+	void *evalue;
+} Event;
 
 typedef struct Vector2
 {
@@ -126,14 +121,16 @@ void sevent(Byte type, Sprite *spr, int time, void *val);
  * @param  *val: float value of the event
  * @retval None
  */
-void sfevent(Byte type, Sprite *spr, int stime, float val);
+void sfevent(Byte type, Sprite *spr, int time, float val);
 
 void devent(Byte type, Sprite *spr, short easing, int stime, int etime, void *sval, void *eval);
 void dfevent(Byte type, Sprite *spr, short easing, int stime, int etime, float sval, float eval);
+short pheader(Byte type, Byte dynamic, short easing);
+
+void parsevalue(Byte type, void *value, char *buffer);
 
 unsigned int getpath(Storyboard *storyboard, char *value);
 unsigned int getv2(Storyboard *storyboard, VEC2 value);
 unsigned int getv3(Storyboard *storyboard, VEC3 value);
-Byte getparam(Sprite *sprite);
 
 #endif
