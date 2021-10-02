@@ -62,6 +62,7 @@ void sbprint(Storyboard *storyboard)
   Sprite *overlay[storyboard->layercounts[4]];
 
   // Filling layers
+  // (TODO) Need to be refactored cause this code looks bad
   Node *current = storyboard->elements->first_element;
   int b = 0, f = 0, x = 0, o = 0, t = 0;
   while (current)
