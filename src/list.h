@@ -18,9 +18,9 @@
  */
 typedef struct List
 {
-	int esize;
-	int length;
-	struct Node *first_element;
+  int esize;
+  int length;
+  struct Node *first_element;
 } List;
 
 /**
@@ -28,8 +28,8 @@ typedef struct List
  */
 typedef struct Node
 {
-	void *value;
-	struct Node *next;
+  void *value;
+  struct Node *next;
 } Node;
 
 /**

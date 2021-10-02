@@ -35,7 +35,7 @@ typedef unsigned char Byte;
 
 // General helping values
 #define SCREEN_CENTER \
-	(VEC2) { 320, 240 }
+  (VEC2) { 320, 240 }
 
 #define v2equal(v1, v2) (v1.x == v2.x) && (v1.y == v2.y)
 #define etype(v) (v->header >> 12)
