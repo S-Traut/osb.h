@@ -47,41 +47,41 @@ typedef unsigned char Byte;
 
 typedef struct Storyboard
 {
-	List *paths;
-	List *vec2;
-	List *vec3;
-	List *elements;
+  List *paths;
+  List *vec2;
+  List *vec3;
+  List *elements;
 
-	int layercounts[5];
+  int layercounts[5];
 } Storyboard;
 
 typedef struct StoryboardElement
 {
-	unsigned short header;
-	unsigned short path_index;
-	unsigned int pos_index;
-	List *events;
+  unsigned short header;
+  unsigned short path_index;
+  unsigned int pos_index;
+  List *events;
 } StoryboardElement;
 
 typedef StoryboardElement Sprite;
 
 typedef struct Event
 {
-	short header;
-	int stime;
-	int etime;
-	void *svalue;
-	void *evalue;
+  short header;
+  int stime;
+  int etime;
+  void *svalue;
+  void *evalue;
 } Event;
 
 typedef struct Vector2
 {
-	float x, y;
+  float x, y;
 } VEC2;
 
 typedef struct Vector3
 {
-	float x, y, z;
+  float x, y, z;
 } VEC3;
 
 Storyboard *sbcreate();
