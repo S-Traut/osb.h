@@ -3,18 +3,26 @@
 Storyboard *sbcreate()
 {
 	Storyboard storyboard;
-	Storyboard *pointer = malloc(sizeof(Storyboard));
+  Storyboard *pointer = (Storyboard *)malloc(sizeof(Storyboard));
 	storyboard.elements = lscreate(sizeof(StoryboardElement));
 	storyboard.paths = lscreate(LSMODE_DYNAMIC);
 	storyboard.vec2 = lscreate(sizeof(VEC2));
 	storyboard.vec3 = lscreate(sizeof(VEC3));
+	storyboard.layercounts[0] = 0;
+	storyboard.layercounts[1] = 0;
+	storyboard.layercounts[2] = 0;
+	storyboard.layercounts[3] = 0;
+	storyboard.layercounts[4] = 0;
 	memcpy(pointer, &storyboard, sizeof(Storyboard));
 	getv2(pointer, SCREEN_CENTER);
+  
 	return pointer;
 }
 
 void sbpush(Storyboard *storyboard, StoryboardElement *element)
 {
+	Byte layer = elayer(element);
+	storyboard->layercounts[layer]++;
 	lspush(storyboard->elements, element);
 }
 
@@ -24,7 +32,7 @@ void sbfree(Storyboard *storyboard)
 	Node *current = storyboard->elements->first_element;
 	while (current)
 	{
-		StoryboardElement *sprite = current->value;
+		StoryboardElement *sprite = (StoryboardElement*)current->value;
 		if (etype(sprite) == 0)
 		{
 			sprfree(sprite);
@@ -42,6 +50,74 @@ void sbfree(Storyboard *storyboard)
 
 void sbprint(Storyboard *storyboard)
 {
+	// Build the layers
+	printf("[Events]\n");
+	printf("//Background and Video events\n");
+
+	// Generating layer sizes
+	Sprite *background[storyboard->layercounts[0]];
+	Sprite *fail[storyboard->layercounts[1]];
+	Sprite *pass[storyboard->layercounts[2]];
+	Sprite *foreground[storyboard->layercounts[3]];
+	Sprite *overlay[storyboard->layercounts[4]];
+
+	// Filling layers
+	Node *current = storyboard->elements->first_element;
+	int b = 0, f = 0, x = 0, o = 0, t = 0;
+	while (current)
+	{
+		Sprite *sprite = (Sprite *)current->value;
+		Byte layer = elayer(sprite);
+		switch (layer)
+		{
+		case L_BACKGROUND:
+			background[b] = sprite;
+			b++;
+			break;
+
+		case L_FAIL:
+			fail[x] = sprite;
+			x++;
+			break;
+
+		case L_PASS:
+			pass[o] = sprite;
+			o++;
+			break;
+
+		case L_FOREGROUND:
+			foreground[f] = sprite;
+			f++;
+			break;
+
+		case L_OVERLAY:
+			overlay[t] = sprite;
+			t++;
+			break;
+
+		default:
+			background[b] = sprite;
+			b++;
+			break;
+		}
+		current = current->next;
+	}
+
+	// Printing layers
+	layerprint(storyboard, 0, "Background", background, storyboard->layercounts[0]);
+	layerprint(storyboard, 1, "Fail", fail, storyboard->layercounts[1]);
+	layerprint(storyboard, 2, "Pass", pass, storyboard->layercounts[2]);
+	layerprint(storyboard, 3, "Foreground", foreground, storyboard->layercounts[3]);
+	layerprint(storyboard, 4, "Overlay", overlay, storyboard->layercounts[4]);
+}
+
+void layerprint(Storyboard *storyboard, int id, const char *name, Sprite *layer[], int size)
+{
+	printf("Storyboard Layer %i (%s)\n", id, name);
+	for (int i = 0; i < size; i++)
+	{
+		sprprint(storyboard, layer[i]);
+	}
 }
 
 Sprite sprcreate(unsigned short path, Byte layer, Byte origin, unsigned int position)
@@ -71,7 +147,7 @@ void sprfree(Sprite *sprite)
 	Node *current = sprite->events->first_element;
 	while (current)
 	{
-		Event *event = current->value;
+		Event *event = (Event *)current->value;
 		free(event->svalue);
 		free(event->evalue);
 		current = current->next;
@@ -82,21 +158,21 @@ void sprfree(Sprite *sprite)
 
 void sprprint(Storyboard *storyboard, Sprite *sprite)
 {
-	char *path = lsget(storyboard->paths, sprite->path_index)->value;
-	char *layer = sblayer(sprite->header);
-	char *origin = sborigin(sprite->header);
-	VEC2 *position = lsget(storyboard->vec2, sprite->pos_index)->value;
+	char *path = (char *)lsget(storyboard->paths, sprite->path_index)->value;
+	char const *layer = sblayer(sprite->header);
+	char const *origin = sborigin(sprite->header);
+	VEC2 *position = (VEC2 *)lsget(storyboard->vec2, sprite->pos_index)->value;
 
 	printf("Sprite,%s,%s,\"%s\",%.7g,%.7g\n", layer, origin, path, position->x, position->y);
 
-	char *types[] = {"F", "S", "V", "M", "R", "C", "MX", "MY"};
+	char const *types[] = {"F", "S", "V", "M", "R", "C", "MX", "MY"};
 	Node *current = sprite->events->first_element;
 	while (current)
 	{
-		Event *event = current->value;
+		Event *event = (Event *)current->value;
 		Byte btype = ptype(event);
-		Byte easing = event->header & 127;
-		char *type = types[btype];
+    Byte easing = event->header & 127;
+    const char* type = types[btype];
 		if (event->etime != -1)
 		{
 			char sbuffer[100];
@@ -124,31 +200,32 @@ void createevent(short header, Sprite *spr, int stime, int etime, void *sval, vo
 
 	switch ((header & 3840) >> 8)
 	{
-	case E_MOVE:
-		VEC2 *msptr = malloc(sizeof(VEC2));
-		memcpy(msptr, sval, sizeof(VEC2));
-		event.svalue = msptr;
+	  case E_MOVE: {
+		  void *msptr = malloc(sizeof(VEC2));
+		  memcpy(msptr, sval, sizeof(VEC2));
+		  event.svalue = msptr;
 
-		if (eval)
-		{
-			VEC2 *meptr = malloc(sizeof(VEC2));
-			memcpy(meptr, eval, sizeof(VEC2));
-			event.evalue = meptr;
-		}
-		else
-			event.evalue = NULL;
+		  if (eval)
+		  {
+			  void *meptr = malloc(sizeof(VEC2));
+			  memcpy(meptr, eval, sizeof(VEC2));
+			  event.evalue = meptr;
+		  }
+		  else
+			  event.evalue = NULL;
 
-		lspush(spr->events, &event);
-		break;
+		  lspush(spr->events, &event);
+		  break;
+    }
 
-	default:
-		float *sptr = malloc(sizeof(float));
+	default: {
+		void *sptr = malloc(sizeof(float));
 		memcpy(sptr, sval, sizeof(float));
 		event.svalue = sptr;
 
 		if (eval)
 		{
-			float *eptr = malloc(sizeof(float));
+			void *eptr = malloc(sizeof(float));
 			memcpy(eptr, eval, sizeof(float));
 			event.evalue = eptr;
 		}
@@ -157,7 +234,8 @@ void createevent(short header, Sprite *spr, int stime, int etime, void *sval, vo
 
 		lspush(spr->events, &event);
 		break;
-	}
+	  }
+  }
 }
 
 void sevent(Byte type, Sprite *spr, int time, void *val)
@@ -184,21 +262,22 @@ void dfevent(Byte type, Sprite *spr, short easing, int stime, int etime, float s
 	createevent(header, spr, stime, etime, &sval, &eval);
 }
 
-void parsevalue(Byte type, void *value, char *buffer)
+void parsevalue(Byte type, void *value, char const *buffer)
 {
-	switch (type)
-	{
-	case E_MOVE:
-		VEC2 *v2 = value;
-		sprintf(buffer, "%.7g,%.7g", v2->x, v2->y);
-		return;
-		break;
+	switch (type) {
+	  case E_MOVE: {
+		  VEC2 *v2 = (VEC2 *)value;
+		  sprintf((char *)buffer, "%.7g,%.7g", v2->x, v2->y);
+		  return;
+      break;
+    }
 
-	default:
-		float *v = value;
-		sprintf(buffer, "%.4g", *v);
-		return;
-		break;
+	  default: {
+		  float *v = (float *)value;
+		  sprintf((char *)buffer, "%.4g", *v);
+		  return;
+      break;
+    }
 	}
 	buffer = "";
 }
@@ -213,9 +292,9 @@ short pheader(Byte type, Byte dynamic, short easing)
 	return header;
 }
 
-char *sborigin(short header)
+char const *sborigin(short header)
 {
-	char *origins[] = {
+	char const *origins[] = {
 		"Centre",
 		"TopLeft",
 		"TopCenter",
@@ -230,9 +309,9 @@ char *sborigin(short header)
 	return origins[origin];
 }
 
-char *sblayer(short header)
+char const *sblayer(short header)
 {
-	char *layers[] = {
+	char const *layers[] = {
 		"Background",
 		"Fail",
 		"Pass",
@@ -243,13 +322,13 @@ char *sblayer(short header)
 	return layers[layer];
 }
 
-unsigned int getpath(Storyboard *storyboard, char *value)
+unsigned int getpath(Storyboard *storyboard, const char *value)
 {
 	Node *current = storyboard->paths->first_element;
 	size_t i = 0;
 	while (current)
 	{
-		char *check_value = current->value;
+		char *check_value = (char *)current->value;
 		if (strcmp(value, check_value) == 0)
 			return i;
 
@@ -257,7 +336,7 @@ unsigned int getpath(Storyboard *storyboard, char *value)
 		i++;
 	}
 
-	lsdpush(storyboard->paths, value, strlen(value) + 1);
+	lsdpush(storyboard->paths, (char *)value, strlen(value) + 1);
 	return i;
 }
 

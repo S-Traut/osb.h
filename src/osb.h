@@ -39,8 +39,9 @@ typedef unsigned char Byte;
 
 #define v2equal(v1, v2) (v1.x == v2.x) && (v1.y == v2.y)
 #define etype(v) (v->header >> 12)
+#define elayer(v) (v->header & 112) >> 4
 #define ptype(v) (v->header & 3840) >> 8
-#define isdynamic(event) (event->type & 128) >> 7)
+#define isdynamic(event) (event->type & 128) >> 7
 
 // Type definitions
 
@@ -50,6 +51,8 @@ typedef struct Storyboard
 	List *vec2;
 	List *vec3;
 	List *elements;
+
+	int layercounts[5];
 } Storyboard;
 
 typedef struct StoryboardElement
@@ -86,8 +89,8 @@ void sbfree(Storyboard *storyboard);
 void sbprint(Storyboard *storyboard);
 void sbpush(Storyboard *storyboard, StoryboardElement *element);
 
-char *sborigin(short header);
-char *sblayer(short header);
+char const *sborigin(short header);
+char const *sblayer(short header);
 
 void sprfree(Sprite *sprite);
 void sprprint(Storyboard *storyboard, Sprite *sprite);
@@ -127,9 +130,10 @@ void devent(Byte type, Sprite *spr, short easing, int stime, int etime, void *sv
 void dfevent(Byte type, Sprite *spr, short easing, int stime, int etime, float sval, float eval);
 short pheader(Byte type, Byte dynamic, short easing);
 
-void parsevalue(Byte type, void *value, char *buffer);
+void layerprint(Storyboard *storyboard, int id, const char *name, Sprite *layer[], int size);
+void parsevalue(Byte type, void *value, char const *buffer);
 
-unsigned int getpath(Storyboard *storyboard, char *value);
+unsigned int getpath(Storyboard *storyboard, const char *value);
 unsigned int getv2(Storyboard *storyboard, VEC2 value);
 unsigned int getv3(Storyboard *storyboard, VEC3 value);
 
