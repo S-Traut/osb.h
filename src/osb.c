@@ -218,8 +218,9 @@ void createevent(short header, Sprite *spr, int stime, int etime, void *sval, vo
         memcpy(meptr, eval, sizeof(VEC2));
         event.evalue = meptr;
       }
-      else
+      else {    
         event.evalue = NULL;
+      }
 
         lspush(spr->events, &event);
       break;

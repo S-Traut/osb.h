@@ -53,27 +53,16 @@ void lsdpush(List *list, void *value, int size)
   if (!list->first_element)
   {
     list->first_element = node_pointer;
+    list->last_element = node_pointer;
     list->length++;
     return;
   }
 
-  Node *current = list->first_element;
-  while (current)
-  {
-    Node *next = current->next;
-    if (!next)
-    {
-      current->next = node_pointer;
-      list->length++;
-      return;
-    }
-
-    current = next;
-  }
-
-  // If fails, free both allocated memory.
-  free(node_pointer->value);
-  free(node_pointer);
+  Node *node = list->last_element;
+  node->next = node_pointer;
+  list->last_element = node_pointer;
+  list->length++;
+  return;
 }
 
 void lsremove(List *list, int index)

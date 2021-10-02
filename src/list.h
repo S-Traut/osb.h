@@ -21,6 +21,7 @@ typedef struct List
   int esize;
   int length;
   struct Node *first_element;
+  struct Node *last_element;
 } List;
 
 /**
