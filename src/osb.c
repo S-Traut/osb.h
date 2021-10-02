@@ -71,12 +71,12 @@ void sbprint(Storyboard *storyboard)
     switch (layer)
     {
       case L_BACKGROUND: {
-			  background[b] = sprite;
-			  b++;
-			  break;
+        background[b] = sprite;
+        b++;
+        break;
       }
 
-		  case L_FAIL: {
+      case L_FAIL: {
         fail[x] = sprite;
         x++;
         break;
@@ -88,7 +88,7 @@ void sbprint(Storyboard *storyboard)
         break;
       }
 
-		  case L_FOREGROUND: {
+      case L_FOREGROUND: {
         foreground[f] = sprite;
         f++;
         break;
