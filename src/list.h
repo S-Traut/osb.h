@@ -6,11 +6,11 @@
 #define osbList
 
 #define LSMODE_DYNAMIC -1
-
 #define LSPRINT_INT 0
 #define LSPRINT_STR 1
 
 // MESSAGES
+
 #define M_LS_DYNAMIC_PUSH "WARNING: Using lspush with a dynamic list isn't supported, use lsdpush instead. (skipped)"
 
 /**
