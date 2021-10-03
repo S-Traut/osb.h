@@ -1,46 +1,22 @@
 #include "osb.h"
 #include <time.h>
 
-void ptime(const char* text, clock_t start) {
-  clock_t c = clock();
-  printf("%s - %f\n", text, (double)(c-start) / CLOCKS_PER_SEC);
-  
-}
-
-void background(clock_t s, Storyboard *storyboard, const char *path, int stime, int etime)
-{
-  short background = getpath(storyboard, path);
-
-  Sprite sprite = sprc(background);
-
-  VEC2 spos = {30, 240};
-  VEC2 epos = {40, 240};
-  
-  devent(E_MOVE, &sprite, 0, stime, etime, &spos, &epos);
-  dfevent(E_FADE, &sprite, 0, stime, stime + 1000, 0, 1);
-  dfevent(E_FADE, &sprite, 0, etime, etime + 1000, 1, 0);
-
-  dfevent(E_FADE, &sprite, 0, 0, 1000, 0, 1);
-  dfevent(E_FADE, &sprite, 0, 0, 1000, 0, 1);
-  dfevent(E_FADE, &sprite, 0, 0, 1000, 0, 1);
-  dfevent(E_FADE, &sprite, 0, 0, 1000, 0, 1);
-
-  sbpush(storyboard, &sprite);
-}
-
 int main(int argc, char const *argv[])
 {
-  clock_t begin = clock();
-  Storyboard *storyboard = sbcreate();
-  ptime("CREATED SB", begin);
+  int storyboard_size = 10;
+  StoryboardElement elements[storyboard_size];
+  Storyboard storyboard = sbcreate(elements, storyboard_size); 
+  unsigned short pixel = getpath(storyboard, "sb/p.png");
 
+  VEC2 pos = {320, 240};
 
-  for(int i = 0; i < 1000000; i++) {
-    background(begin, storyboard, "bg.jpg", 5000, 10000);
+  for(int i = 0; i < 1; i++) {
+    Sprite sprite = sprc(pixel, 1);
+    sevent(E_MOVE, &sprite, 0, &pos);
+    sbpush(&storyboard, sprite);
   }
 
-  //sbprint(storyboard);
+  sbprint(storyboard);
   sbfree(storyboard);
-  ptime("FREE", begin);
   return 0;
 }

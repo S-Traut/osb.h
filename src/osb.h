@@ -38,33 +38,12 @@ typedef unsigned char Byte;
   (VEC2) { 320, 240 }
 
 #define v2equal(v1, v2) (v1.x == v2.x) && (v1.y == v2.y)
-#define etype(v) (v->header >> 12)
-#define elayer(v) (v->header & 112) >> 4
-#define ptype(v) (v->header & 3840) >> 8
+#define etype(v) (v.header >> 12)
+#define elayer(v) (v.header & 112) >> 4
+#define ptype(v) (v.header & 3840) >> 8
 #define isdynamic(event) (event->type & 128) >> 7
 
 // Type definitions
-
-typedef struct Storyboard
-{
-  List *paths;
-  List *vec2;
-  List *vec3;
-  List *elements;
-
-  int layercounts[5];
-} Storyboard;
-
-typedef struct StoryboardElement
-{
-  unsigned short header;
-  unsigned short path_index;
-  unsigned int pos_index;
-  List *events;
-} StoryboardElement;
-
-typedef StoryboardElement Sprite;
-
 typedef struct Event
 {
   short header;
@@ -73,6 +52,28 @@ typedef struct Event
   void *svalue;
   void *evalue;
 } Event;
+
+typedef struct StoryboardElement
+{
+  int event_count;
+  unsigned short header;
+  unsigned short path_index;
+  unsigned int pos_index;
+  Event *events;
+} StoryboardElement;
+
+typedef struct Storyboard
+{
+  List *paths;
+  List *vec2;
+  List *vec3;
+  StoryboardElement* elements;
+  int layercounts[5];
+  int size;
+  int element_count;
+} Storyboard;
+
+typedef StoryboardElement Sprite;
 
 typedef struct Vector2
 {
@@ -84,17 +85,17 @@ typedef struct Vector3
   float x, y, z;
 } VEC3;
 
-Storyboard *sbcreate();
-void sbfree(Storyboard *storyboard);
-void sbprint(Storyboard *storyboard);
-void sbpush(Storyboard *storyboard, StoryboardElement *element);
+Storyboard sbcreate(StoryboardElement* elements, int size);
+void sbfree(Storyboard storyboard);
+void sbprint(Storyboard storyboard);
+void sbpush(Storyboard *storyboard, StoryboardElement element);
 
 char const *sborigin(short header);
 char const *sblayer(short header);
 
-void sprfree(Sprite *sprite);
-void sprprint(Storyboard *storyboard, Sprite *sprite);
-Sprite sprcreate(unsigned short path, Byte layer, Byte origin, unsigned int position);
+void sprfree(Sprite sprite);
+void sprprint(Storyboard storyboard, Sprite sprite);
+Sprite sprcreate(unsigned short path, Byte layer, Byte origin, unsigned int position, int size);
 
 /**
  * @brief  Quick sprcreate function, generate Layer, Origin and Position to initial values
@@ -102,7 +103,7 @@ Sprite sprcreate(unsigned short path, Byte layer, Byte origin, unsigned int posi
  * @param  *path: Path to the sprite
  * @retval Sprite
  */
-Sprite sprc(unsigned short path);
+Sprite sprc(unsigned short path, int size);
 
 /**
  * @brief  Add a static event to a Sprite
@@ -130,11 +131,11 @@ void devent(Byte type, Sprite *spr, short easing, int stime, int etime, void *sv
 void dfevent(Byte type, Sprite *spr, short easing, int stime, int etime, float sval, float eval);
 short pheader(Byte type, Byte dynamic, short easing);
 
-void layerprint(Storyboard *storyboard, int id, const char *name, Sprite *layer[], int size);
+void layerprint(Storyboard storyboard, int id, const char *name, Sprite layer[], int size);
 void parsevalue(Byte type, void *value, char const *buffer);
 
-unsigned int getpath(Storyboard *storyboard, const char *value);
-unsigned int getv2(Storyboard *storyboard, VEC2 value);
+unsigned int getpath(Storyboard storyboard, const char *value);
+unsigned int getv2(Storyboard storyboard, VEC2 value);
 unsigned int getv3(Storyboard *storyboard, VEC3 value);
 
 #endif
